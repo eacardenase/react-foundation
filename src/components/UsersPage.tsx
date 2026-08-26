@@ -1,11 +1,18 @@
 import axios from "axios";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import type {JSONPlaceholderUserResponse} from "../interfaces";
 
-const loadUsers = async (): Promise<JSONPlaceholderUserResponse[]> => {
+const loadUsers = async (
+    page: number = 1,
+): Promise<JSONPlaceholderUserResponse[]> => {
     try {
         const {data} = await axios.get<JSONPlaceholderUserResponse[]>(
             "https://jsonplaceholder.typicode.com/users",
+            {
+                params: {
+                    page: page,
+                },
+            },
         );
 
         return data;
@@ -18,9 +25,34 @@ const loadUsers = async (): Promise<JSONPlaceholderUserResponse[]> => {
 
 export const UsersPage = () => {
     const [users, setUsers] = useState<JSONPlaceholderUserResponse[]>([]);
+    const currentPageRef = useRef(1);
+
+    const nextPage = async () => {
+        currentPageRef.current++;
+
+        const users = await loadUsers(currentPageRef.current);
+
+        if (users.length > 0) {
+            setUsers(users);
+
+            return;
+        }
+
+        currentPageRef.current--;
+    };
+
+    const prevPage = async () => {
+        if (currentPageRef.current <= 1) return;
+
+        currentPageRef.current -= 1;
+
+        const users = await loadUsers(currentPageRef.current);
+
+        setUsers(users);
+    };
 
     useEffect(() => {
-        loadUsers().then(setUsers);
+        loadUsers(currentPageRef.current).then(setUsers);
     }, []);
 
     return (
@@ -40,6 +72,11 @@ export const UsersPage = () => {
                     ))}
                 </tbody>
             </table>
+
+            <div>
+                <button onClick={prevPage}>Prev</button>
+                <button onClick={nextPage}>Next</button>
+            </div>
         </>
     );
 };
