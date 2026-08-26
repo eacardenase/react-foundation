@@ -1,5 +1,5 @@
 import axios from "axios";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import type {JSONPlaceholderUserResponse} from "../interfaces";
 
 const loadUsers = async (): Promise<JSONPlaceholderUserResponse[]> => {
@@ -17,8 +17,10 @@ const loadUsers = async (): Promise<JSONPlaceholderUserResponse[]> => {
 };
 
 export const UsersPage = () => {
+    const [users, setUsers] = useState<JSONPlaceholderUserResponse[]>([]);
+
     useEffect(() => {
-        loadUsers().then((users) => console.log(users));
+        loadUsers().then(setUsers);
     });
 
     return (
@@ -27,19 +29,33 @@ export const UsersPage = () => {
             <table>
                 <thead>
                     <tr>
-                        <th>Avatar</th>
+                        <th>Username</th>
                         <th>Nombre</th>
                         <th>Email</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>avatar</td>
-                        <td>nombre</td>
-                        <td>email</td>
-                    </tr>
+                    {users.map((user) => (
+                        <UserRow key={user.id} user={user} />
+                    ))}
                 </tbody>
             </table>
         </>
+    );
+};
+
+interface Props {
+    user: JSONPlaceholderUserResponse;
+}
+
+export const UserRow = ({user}: Props) => {
+    const {username, name, email} = user;
+
+    return (
+        <tr>
+            <td>{username}</td>
+            <td>{name}</td>
+            <td>{email}</td>
+        </tr>
     );
 };
