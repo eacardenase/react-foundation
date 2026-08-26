@@ -21,7 +21,7 @@ export const UsersPage = () => {
 
     useEffect(() => {
         loadUsers().then(setUsers);
-    });
+    }, []);
 
     return (
         <>
